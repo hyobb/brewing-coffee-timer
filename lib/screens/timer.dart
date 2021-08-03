@@ -1,9 +1,12 @@
+import 'package:brewing_coffee_timer/controllers/timer_controller.dart';
 import 'package:brewing_coffee_timer/models/stage.dart';
 import 'package:brewing_coffee_timer/widgets/new_stage_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class Timer extends StatelessWidget {
+  final timerController = Get.put(TimerController());
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -17,9 +20,9 @@ class Timer extends StatelessWidget {
           onPressed: () {
             Get.bottomSheet(Container(
               color: Colors.white,
-              height: 300,
+              height: 400,
               child: NewStageWidget(),
-            ));
+            )).whenComplete(() => timerController.resetCurrentData());
           }),
     );
   }
@@ -103,52 +106,49 @@ class _TimerWidgetState extends State<TimerWidget> {
   }
 }
 
-class StageListWidget extends StatefulWidget {
-  final List<Stage> stages = [
-    Stage("뜸 들이기", Duration(minutes: 1)),
-    Stage("1차 추출", Duration(minutes: 1)),
-    Stage("2차 추출", Duration(seconds: 40))
-  ];
-
-  // StageListWidget(this.stages);
-
-  @override
-  _StageListWidgetState createState() => _StageListWidgetState();
-}
-
-class _StageListWidgetState extends State<StageListWidget> {
+class StageListWidget extends GetView<TimerController> {
   @override
   Widget build(BuildContext context) {
-    return ListView.separated(
-      scrollDirection: Axis.vertical,
-      shrinkWrap: true,
-      itemCount: widget.stages.length,
-      itemBuilder: (context, index) {
-        return StageTile(widget.stages[index]);
-      },
-      separatorBuilder: (context, index) {
-        return Divider();
+    return GetBuilder<TimerController>(
+      builder: (controller) {
+        return ListView.separated(
+          scrollDirection: Axis.vertical,
+          shrinkWrap: true,
+          itemCount: controller.stages.length,
+          itemBuilder: (context, index) {
+            return StageTile(controller.stages[index]);
+          },
+          separatorBuilder: (context, index) {
+            return Divider();
+          },
+        );
       },
     );
+    // return Obx(() => ListView.separated(
+    //       scrollDirection: Axis.vertical,
+    //       shrinkWrap: true,
+    //       itemCount: controller.stages.length,
+    //       itemBuilder: (context, index) {
+    //         return StageTile(controller.stages[index]);
+    //       },
+    //       separatorBuilder: (context, index) {
+    //         return Divider();
+    //       },
+    //     ));
   }
 }
 
-class StageTile extends StatefulWidget {
+class StageTile extends StatelessWidget {
   final Stage stage;
 
   StageTile(this.stage);
 
   @override
-  _StageTileState createState() => _StageTileState();
-}
-
-class _StageTileState extends State<StageTile> {
-  @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Text("1"),
-      title: Text(widget.stage.title),
-      subtitle: Text(widget.stage.duration.toString()),
+      leading: Text(stage.order.toString()),
+      title: Text(stage.title),
+      subtitle: Text(stage.duration.toString()),
     );
   }
 }
