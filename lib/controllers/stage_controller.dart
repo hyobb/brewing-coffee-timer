@@ -4,7 +4,11 @@ import 'package:get/get.dart';
 class StageController extends GetxController {
   String _currentTitle = '';
   Duration _currentDuration = new Duration(minutes: 1, seconds: 0);
-  List<Stage> _stages = [];
+  List<Stage> _stages = [
+    Stage(1, '뜸', Duration(seconds: 3)),
+    Stage(2, '1차 추출', Duration(seconds: 3)),
+    Stage(3, '2차 추출', Duration(seconds: 3))
+  ];
   get stages => _stages;
 
   @override
