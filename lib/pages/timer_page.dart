@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:brewing_coffee_timer/controllers/stage_controller.dart';
 import 'package:brewing_coffee_timer/controllers/timer_controller.dart';
 import 'package:brewing_coffee_timer/models/stage.dart';
@@ -5,6 +7,7 @@ import 'package:brewing_coffee_timer/widgets/new_stage_widget.dart';
 import 'package:circular_countdown_timer/circular_countdown_timer.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:brewing_coffee_timer/extensions/duration.dart';
 
 class TimerPage extends StatelessWidget {
   final stageController = Get.put(StageController());
@@ -50,53 +53,92 @@ class TimerWidget extends GetView<TimerController> {
     return GetBuilder<TimerController>(builder: (controller) {
       return Column(
         children: [
-          Container(
-            child: CircularCountDownTimer(
-              duration: controller.currentDurationSeconds,
-              initialDuration: 0,
-              controller: controller.countDownController,
-              width: MediaQuery.of(context).size.width / 2,
-              height: MediaQuery.of(context).size.width / 2,
-              ringColor: Colors.yellow[800]!,
-              ringGradient: null,
-              fillColor: Colors.white,
-              fillGradient: null,
-              backgroundColor: Colors.white,
-              backgroundGradient: null,
-              strokeWidth: 10.0,
-              strokeCap: StrokeCap.round,
-              textStyle: TextStyle(fontSize: 30),
-              textFormat: CountdownTextFormat.S,
-              isReverse: false,
-              isReverseAnimation: false,
-              isTimerTextShown: false,
-              autoStart: false,
-              onStart: () {
-                print('CountDown started');
-              },
-              onComplete: () {
-                print('CountDown ended');
-              },
-            ),
-          ),
-          Container(
-            decoration: BoxDecoration(color: Colors.blueAccent),
-            child: Column(
-              children: <Widget>[
-                Text(
-                  "총 경과 시간 ${controller.totalElapsedTime} / ${controller.totalTime}",
-                  style: TextStyle(fontSize: 20),
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              Container(
+                alignment: Alignment.center,
+                child: CircularCountDownTimer(
+                  duration: controller.currentDurationSeconds,
+                  initialDuration: 0,
+                  controller: controller.countDownController,
+                  width: MediaQuery.of(context).size.width - 50,
+                  height: MediaQuery.of(context).size.width - 50,
+                  ringColor: Colors.yellow[800]!,
+                  ringGradient: null,
+                  fillColor: Colors.white,
+                  fillGradient: null,
+                  backgroundColor: Colors.transparent,
+                  backgroundGradient: null,
+                  strokeWidth: 8.0,
+                  strokeCap: StrokeCap.round,
+                  textStyle: TextStyle(fontSize: 30),
+                  textFormat: CountdownTextFormat.S,
+                  isReverse: false,
+                  isReverseAnimation: false,
+                  isTimerTextShown: false,
+                  autoStart: false,
+                  onStart: () {
+                    print('CountDown started');
+                  },
+                  onComplete: () {
+                    print('CountDown ended');
+                  },
                 ),
-                Text(
-                  "${controller.currentStageTitle} ${controller.currentRemainedTime}",
-                  style: TextStyle(fontSize: 40),
+              ),
+              Container(
+                alignment: Alignment.topCenter,
+                padding: EdgeInsets.only(bottom: 20),
+                child: Column(
+                  children: <Widget>[
+                    // Text(
+                    //   "총 경과 시간 ${controller.totalElapsedTime} / ${controller.totalTime}",
+                    //   style: TextStyle(fontSize: 20, color: Colors.white),
+                    // ),
+                    Container(
+                      height: 30,
+                      child: Text(
+                        controller.currentStageTitle,
+                        style: TextStyle(fontSize: 30, color: Colors.white),
+                        textAlign: TextAlign.left,
+                      ),
+                    ),
+                    Container(
+                      // decoration: BoxDecoration(
+                      //   color: Colors.grey[800],
+                      // ),
+                      width: MediaQuery.of(context).size.width / 2 + 80,
+                      height: 120,
+                      alignment: Alignment.center,
+                      child: Text(
+                        controller.currentRemainedTime,
+                        style: TextStyle(
+                          fontFeatures: [
+                            FontFeature.tabularFigures(),
+                          ],
+                          fontSize: 90,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w200,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      height: 20,
+                      child: Text(
+                        "${controller.nextStageTitle} ${controller.nextStageTime}",
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.grey[700],
+                          fontFeatures: [
+                            FontFeature.tabularFigures(),
+                          ],
+                        ),
+                      ),
+                    )
+                  ],
                 ),
-                Text(
-                  "${controller.nextStageTitle} ${controller.nextStageTime}",
-                  style: TextStyle(fontSize: 20),
-                )
-              ],
-            ),
+              ),
+            ],
           ),
           Container(
             child: Row(
@@ -260,7 +302,7 @@ class StageTile extends StatelessWidget {
         style: TextStyle(color: Colors.white),
       ),
       trailing: Text(
-        stage.duration.toString(),
+        stage.duration.toCustomString(),
         style: TextStyle(color: Colors.white),
       ),
     );

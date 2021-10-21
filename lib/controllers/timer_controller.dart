@@ -4,6 +4,7 @@ import 'package:brewing_coffee_timer/models/stage.dart';
 import 'package:circular_countdown_timer/circular_countdown_timer.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:brewing_coffee_timer/extensions/duration.dart';
 
 class TimerController extends GetxController {
   Duration _zeroPeriod = Duration(minutes: 0, seconds: 0);
@@ -20,13 +21,14 @@ class TimerController extends GetxController {
   CountDownController _countDownController = CountDownController();
 
   get stages => _stages;
-  get totalElapsedTime => format(_totalElapsedDuration);
+  get totalElapsedTime => _totalElapsedDuration.toCustomString();
   get currentDurationSeconds => _currentDuration.inSeconds;
-  get currentRemainedTime => format(_currentDuration);
-  get totalTime => format(_totalDuration);
+  get currentRemainedTime => _currentDuration.toCustomString();
+  get totalTime => _totalDuration.toCustomString();
   get currentStageTitle => (_currentStage == null) ? '' : _currentStage!.title;
   get nextStageTitle => (_nextStage == null) ? '' : _nextStage!.title;
-  get nextStageTime => (_nextStage == null) ? '' : format(_nextStage!.duration);
+  get nextStageTime =>
+      (_nextStage == null) ? '' : _nextStage!.duration.toCustomString();
   get state => _state;
   get countDownController => _countDownController;
 
@@ -119,8 +121,6 @@ class TimerController extends GetxController {
     _timer?.cancel();
     changeState(TimerState.done);
   }
-
-  format(Duration d) => d.toString().substring(2, 7);
 }
 
 enum TimerState { beforePlay, playing, paused, stopped, done }
