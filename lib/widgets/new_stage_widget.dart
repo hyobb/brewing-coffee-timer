@@ -1,3 +1,4 @@
+import 'package:brewing_coffee_timer/controllers/new_stage_controller.dart';
 import 'package:brewing_coffee_timer/controllers/stage_controller.dart';
 import 'package:brewing_coffee_timer/controllers/timer_controller.dart';
 import 'package:flutter/cupertino.dart';
@@ -7,6 +8,7 @@ import 'package:get/get.dart';
 
 class NewStageWidget extends StatelessWidget {
   final stageController = Get.put(StageController());
+  final newStageController = Get.put(NewStageController());
   final timerController = Get.put(TimerController());
 
   @override
@@ -22,7 +24,11 @@ class NewStageWidget extends StatelessWidget {
                 CloseButton(),
                 ElevatedButton(
                   onPressed: () {
-                    stageController.addStage();
+                    if (stageController.currentStage == null) {
+                      stageController.addStage();
+                    } else {
+                      stageController.updateCurrentStage();
+                    }
                     timerController.setStages(stageController.stages);
                   },
                   child: Text('저장'),
@@ -30,6 +36,8 @@ class NewStageWidget extends StatelessWidget {
               ],
             ),
             TextField(
+              controller: TextEditingController()
+                ..text = newStageController.stage.title,
               decoration: InputDecoration(labelText: '제목'),
               onChanged: (value) => stageController.setCurrentTitle(value),
             ),
@@ -37,10 +45,9 @@ class NewStageWidget extends StatelessWidget {
               mode: CupertinoTimerPickerMode.ms,
               minuteInterval: 1,
               secondInterval: 1,
-              initialTimerDuration: new Duration(minutes: 1, seconds: 0),
+              initialTimerDuration: newStageController.stage.duration,
               onTimerDurationChanged: (Duration changedDuration) {
                 stageController.setCurrentDuration(changedDuration);
-                print('$changedDuration');
               },
             )
           ],

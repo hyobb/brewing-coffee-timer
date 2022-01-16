@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:brewing_coffee_timer/controllers/new_stage_controller.dart';
 import 'package:brewing_coffee_timer/controllers/stage_controller.dart';
 import 'package:brewing_coffee_timer/controllers/timer_controller.dart';
 import 'package:brewing_coffee_timer/models/stage.dart';
@@ -11,6 +12,7 @@ import 'package:brewing_coffee_timer/extensions/duration.dart';
 
 class TimerPage extends StatelessWidget {
   final stageController = Get.put(StageController());
+  final newStageController = Get.put(NewStageController());
   final timerController = Get.put(TimerController());
 
   @override
@@ -32,7 +34,7 @@ class TimerPage extends StatelessWidget {
               color: Colors.white,
               height: 400,
               child: NewStageWidget(),
-            )).whenComplete(() => {stageController.resetCurrentData()});
+            )).whenComplete(() => {newStageController.resetStage()});
           }),
     );
   }
@@ -59,14 +61,14 @@ class TimerWidget extends GetView<TimerController> {
               Container(
                 alignment: Alignment.center,
                 child: CircularCountDownTimer(
-                  duration: controller.currentDurationSeconds,
+                  duration: controller.currentDurationSeconds.value,
                   initialDuration: 0,
-                  controller: controller.countDownController,
+                  controller: controller.stageController,
                   width: MediaQuery.of(context).size.width - 50,
                   height: MediaQuery.of(context).size.width - 50,
-                  ringColor: Colors.yellow[800]!,
+                  ringColor: Colors.grey[700]!,
                   ringGradient: null,
-                  fillColor: Colors.white,
+                  fillColor: Colors.yellow[800]!,
                   fillGradient: null,
                   backgroundColor: Colors.transparent,
                   backgroundGradient: null,
@@ -75,15 +77,41 @@ class TimerWidget extends GetView<TimerController> {
                   textStyle: TextStyle(fontSize: 30),
                   textFormat: CountdownTextFormat.S,
                   isReverse: false,
-                  isReverseAnimation: false,
+                  isReverseAnimation: true,
                   isTimerTextShown: false,
                   autoStart: false,
                   onStart: () {
-                    print('CountDown started');
+                    print('Stage CountDown started');
                   },
                   onComplete: () {
-                    print('CountDown ended');
+                    print('Stage CountDown ended');
                   },
+                ),
+              ),
+              Container(
+                alignment: Alignment.center,
+                child: CircularCountDownTimer(
+                  duration: controller.totalDurationSeconds,
+                  initialDuration: 0,
+                  controller: controller.countDownController,
+                  width: MediaQuery.of(context).size.width - 20,
+                  height: MediaQuery.of(context).size.width - 20,
+                  ringColor: Colors.grey[700]!,
+                  ringGradient: null,
+                  fillColor: Colors.blue[300]!,
+                  fillGradient: null,
+                  backgroundColor: Colors.transparent,
+                  backgroundGradient: null,
+                  strokeWidth: 8.0,
+                  strokeCap: StrokeCap.round,
+                  textStyle: TextStyle(fontSize: 30),
+                  textFormat: CountdownTextFormat.S,
+                  isReverse: false,
+                  isReverseAnimation: true,
+                  isTimerTextShown: false,
+                  autoStart: false,
+                  onStart: () {},
+                  onComplete: () {},
                 ),
               ),
               Container(
@@ -271,21 +299,12 @@ class StageListWidget extends GetView<StageController> {
         );
       },
     );
-    // return Obx(() => ListView.separated(
-    //       scrollDirection: Axis.vertical,
-    //       shrinkWrap: true,
-    //       itemCount: controller.stages.length,
-    //       itemBuilder: (context, index) {
-    //         return StageTile(controller.stages[index]);
-    //       },
-    //       separatorBuilder: (context, index) {
-    //         return Divider();
-    //       },
-    //     ));
   }
 }
 
 class StageTile extends StatelessWidget {
+  final stageController = Get.put(StageController());
+  final newStageController = Get.put(NewStageController());
   final Stage stage;
 
   StageTile(this.stage);
@@ -301,10 +320,33 @@ class StageTile extends StatelessWidget {
         stage.title,
         style: TextStyle(color: Colors.white),
       ),
-      trailing: Text(
-        stage.duration.toCustomString(),
-        style: TextStyle(color: Colors.white),
+      trailing: Container(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              stage.duration.toCustomString(),
+              style: TextStyle(color: Colors.white),
+            ),
+            IconButton(
+              icon: Icon(Icons.delete, color: Colors.white),
+              onPressed: () => {},
+            ),
+          ],
+        ),
       ),
+      onTap: () {
+        newStageController.setStage(stage);
+        stageController.setCurrentStage(stage.order);
+        Get.bottomSheet(Container(
+          color: Colors.white,
+          height: 400,
+          child: NewStageWidget(),
+        )).whenComplete(() {
+          stageController.setCurrentStage(stage.order);
+          newStageController.resetStage();
+        });
+      },
     );
   }
 }
