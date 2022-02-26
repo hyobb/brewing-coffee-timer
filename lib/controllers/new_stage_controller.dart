@@ -2,7 +2,7 @@ import 'package:brewing_coffee_timer/models/stage.dart';
 import 'package:get/get_state_manager/get_state_manager.dart';
 
 class NewStageController extends GetxController {
-  late Stage _stage;
+  late StageVO _stageVO;
 
   @override
   void onInit() {
@@ -10,25 +10,25 @@ class NewStageController extends GetxController {
     super.onInit();
   }
 
-  Stage get stage => _stage;
+  StageVO get stageVO => _stageVO;
 
   resetStage() {
-    setStage(Stage(0, '', Duration(minutes: 1)));
+    setStage(StageVO(0, '', Duration(minutes: 1)));
     update();
   }
 
-  setStage(Stage stage) {
-    _stage = stage;
+  setStage(StageVO stageVO) {
+    _stageVO = stageVO;
     update();
   }
 
   setTitle(String title) {
-    _stage.setTitle = title;
+    _stageVO.setTitle = title;
     update();
   }
 
   setDuration(Duration duration) {
-    _stage.setDuration = duration;
+    _stageVO.setDuration = duration;
     update();
   }
 }

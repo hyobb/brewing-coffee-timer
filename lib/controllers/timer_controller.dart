@@ -1,7 +1,10 @@
 import 'dart:async';
 import 'dart:ffi';
+import 'package:brewing_coffee_timer/controllers/stage_controller.dart';
+import 'package:brewing_coffee_timer/data/database.dart';
 import 'package:brewing_coffee_timer/models/stage.dart';
 import 'package:circular_countdown_timer/circular_countdown_timer.dart';
+import 'package:drift/backends.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:brewing_coffee_timer/extensions/duration.dart';
@@ -12,28 +15,38 @@ class TimerController extends GetxController {
   Duration _currentDuration = Duration(minutes: 0, seconds: 0);
   Duration _totalDuration = Duration(minutes: 0, seconds: 0);
   int _currentStageIndex = 0;
-  Stage? _currentStage;
-  Stage? _nextStage;
-  List<Stage> _stages = [];
+  StageVO? _currentStageVO;
+  StageVO? _nextStageVO;
+  List<StageVO> _stageVOs = [];
   Timer? _timer;
   TimerState _state = TimerState.beforePlay;
   Duration _period = Duration(milliseconds: 250);
   CountDownController _countDownController = CountDownController();
-  CountDownController _stageController = CountDownController();
+  CountDownController _stageCountDownController = CountDownController();
 
-  get stages => _stages;
+  get stageVOs => _stageVOs;
   get totalElapsedTime => _totalElapsedDuration.toCustomString();
   get totalDurationSeconds => _totalDuration.inSeconds;
   RxInt get currentDurationSeconds => _currentDuration.inSeconds.obs;
   get currentRemainedTime => _currentDuration.toCustomString();
   get totalTime => _totalDuration.toCustomString();
-  get currentStageTitle => (_currentStage == null) ? '' : _currentStage!.title;
-  get nextStageTitle => (_nextStage == null) ? '' : _nextStage!.title;
+  get currentStageTitle =>
+      (_currentStageVO == null) ? '' : _currentStageVO!.title;
+  get nextStageTitle => (_nextStageVO == null) ? '' : _nextStageVO!.title;
   get nextStageTime =>
-      (_nextStage == null) ? '' : _nextStage!.duration.toCustomString();
+      (_nextStageVO == null) ? '' : _nextStageVO!.duration.toCustomString();
   get state => _state;
   get countDownController => _countDownController;
-  get stageController => _stageController;
+  get stageController => _stageCountDownController;
+
+  @override
+  void onReady() {
+    // TODO: implement onReady
+    super.onReady();
+    setStages(Get.put(StageController()).stageVOs);
+
+    update();
+  }
 
   @override
   onInit() {
@@ -45,22 +58,26 @@ class TimerController extends GetxController {
     super.onClose();
   }
 
-  setStages(List<Stage> stages) {
-    _stages = stages;
-    _totalDuration = stages
+  setStages(List<StageVO> stageVOs) {
+    if (stageVOs.isEmpty) {
+      return;
+    }
+
+    _stageVOs = stageVOs;
+    _totalDuration = stageVOs
         .map((e) => e.duration)
         .reduce((value, element) => value + element);
-    _currentStage = _stages.first;
-    _currentDuration = _currentStage!.duration;
-    if (_stages.length > 1) {
-      _nextStage = _stages[_currentStageIndex + 1];
+    _currentStageVO = _stageVOs.first;
+    _currentDuration = _currentStageVO!.duration;
+    if (_stageVOs.length > 1) {
+      _nextStageVO = _stageVOs[_currentStageIndex + 1];
     }
 
     update();
   }
 
   start() {
-    if (_stages.isEmpty || _state == TimerState.playing) {
+    if (_stageVOs.isEmpty || _state == TimerState.playing) {
       return;
     }
 
@@ -70,10 +87,10 @@ class TimerController extends GetxController {
 
     if (_state == TimerState.paused) {
       _countDownController.resume();
-      _stageController.resume();
+      _stageCountDownController.resume();
     } else {
       _countDownController.restart(duration: _totalDuration.inSeconds);
-      _stageController.restart(duration: _currentDuration.inSeconds);
+      _stageCountDownController.restart(duration: _currentDuration.inSeconds);
     }
 
     changeState(TimerState.playing);
@@ -84,23 +101,24 @@ class TimerController extends GetxController {
           _totalElapsedDuration + Duration(milliseconds: 250);
 
       if (_currentDuration == _zeroPeriod) {
-        _currentStage!.isDone = true;
+        _currentStageVO!.isDone = true;
 
-        if (_currentStageIndex < _stages.length - 1) {
+        if (_currentStageIndex < _stageVOs.length - 1) {
           // 다음 스테이지
           _currentStageIndex++;
-          _currentStage = _nextStage;
-          _currentDuration = _currentStage!.duration;
-          _stageController.restart(duration: _currentDuration.inSeconds);
+          _currentStageVO = _nextStageVO;
+          _currentDuration = _currentStageVO!.duration;
+          _stageCountDownController.restart(
+              duration: _currentDuration.inSeconds);
           update();
 
-          if (_currentStageIndex + 1 < _stages.length) {
-            _nextStage = stages[_currentStageIndex + 1];
+          if (_currentStageIndex + 1 < _stageVOs.length) {
+            _nextStageVO = stageVOs[_currentStageIndex + 1];
           } else {
-            _nextStage = null;
+            _nextStageVO = null;
           }
         } else {
-          _nextStage = null;
+          _nextStageVO = null;
         }
       } else {}
 
@@ -123,16 +141,16 @@ class TimerController extends GetxController {
     _currentStageIndex = 0;
     _countDownController.restart();
     _countDownController.pause();
-    _stageController.restart();
-    _stageController.pause();
+    _stageCountDownController.restart();
+    _stageCountDownController.pause();
     changeState(TimerState.stopped);
-    setStages(_stages);
+    setStages(_stageVOs);
   }
 
   pause() {
     _timer?.cancel();
     _countDownController.pause();
-    _stageController.pause();
+    _stageCountDownController.pause();
     changeState(TimerState.paused);
   }
 

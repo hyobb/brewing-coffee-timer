@@ -24,12 +24,12 @@ class NewStageWidget extends StatelessWidget {
                 CloseButton(),
                 ElevatedButton(
                   onPressed: () {
-                    if (stageController.currentStage == null) {
+                    if (stageController.currentStageVO == null) {
                       stageController.addStage();
                     } else {
                       stageController.updateCurrentStage();
                     }
-                    timerController.setStages(stageController.stages);
+                    timerController.setStages(stageController.stageVOs);
                   },
                   child: Text('저장'),
                 )
@@ -37,7 +37,7 @@ class NewStageWidget extends StatelessWidget {
             ),
             TextField(
               controller: TextEditingController()
-                ..text = newStageController.stage.title,
+                ..text = newStageController.stageVO.title,
               decoration: InputDecoration(labelText: '제목'),
               onChanged: (value) => stageController.setCurrentTitle(value),
             ),
@@ -45,7 +45,7 @@ class NewStageWidget extends StatelessWidget {
               mode: CupertinoTimerPickerMode.ms,
               minuteInterval: 1,
               secondInterval: 1,
-              initialTimerDuration: newStageController.stage.duration,
+              initialTimerDuration: newStageController.stageVO.duration,
               onTimerDurationChanged: (Duration changedDuration) {
                 stageController.setCurrentDuration(changedDuration);
               },

@@ -14,11 +14,10 @@ class TimerPage extends StatelessWidget {
   final stageController = Get.put(StageController());
   final newStageController = Get.put(NewStageController());
   final timerController = Get.put(TimerController());
+  // timerController.setStages(stageController.stageVOs);
 
   @override
   Widget build(BuildContext context) {
-    timerController.setStages(stageController.stages);
-
     final double statusBarHeight = MediaQuery.of(context).padding.top;
 
     return Scaffold(
@@ -285,9 +284,9 @@ class StageListWidget extends GetView<StageController> {
         return ListView.separated(
           scrollDirection: Axis.vertical,
           shrinkWrap: true,
-          itemCount: controller.stages.length,
+          itemCount: controller.stageVOs.length,
           itemBuilder: (context, index) {
-            return StageTile(controller.stages[index]);
+            return StageTile(controller.stageVOs[index]);
           },
           separatorBuilder: (context, index) {
             return Divider(
@@ -305,19 +304,19 @@ class StageListWidget extends GetView<StageController> {
 class StageTile extends StatelessWidget {
   final stageController = Get.put(StageController());
   final newStageController = Get.put(NewStageController());
-  final Stage stage;
+  final StageVO stageVO;
 
-  StageTile(this.stage);
+  StageTile(this.stageVO);
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
       leading: Text(
-        stage.order.toString(),
+        stageVO.order.toString(),
         style: TextStyle(color: Colors.white),
       ),
       title: Text(
-        stage.title,
+        stageVO.title,
         style: TextStyle(color: Colors.white),
       ),
       trailing: Container(
@@ -325,7 +324,7 @@ class StageTile extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              stage.duration.toCustomString(),
+              stageVO.duration.toCustomString(),
               style: TextStyle(color: Colors.white),
             ),
             IconButton(
@@ -336,14 +335,14 @@ class StageTile extends StatelessWidget {
         ),
       ),
       onTap: () {
-        newStageController.setStage(stage);
-        stageController.setCurrentStage(stage.order);
+        newStageController.setStage(stageVO);
+        stageController.setCurrentStage(stageVO.order);
         Get.bottomSheet(Container(
           color: Colors.white,
           height: 400,
           child: NewStageWidget(),
         )).whenComplete(() {
-          stageController.setCurrentStage(stage.order);
+          stageController.setCurrentStage(stageVO.order);
           newStageController.resetStage();
         });
       },
