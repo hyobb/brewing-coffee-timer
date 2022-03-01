@@ -7,9 +7,8 @@ import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 
 class NewStageWidget extends StatelessWidget {
-  final stageController = Get.put(StageController());
-  final newStageController = Get.put(NewStageController());
-  final timerController = Get.put(TimerController());
+  final stageController = Get.find<StageController>();
+  final newStageController = Get.find<NewStageController>();
 
   @override
   Widget build(BuildContext context) {
@@ -24,12 +23,13 @@ class NewStageWidget extends StatelessWidget {
                 CloseButton(),
                 ElevatedButton(
                   onPressed: () {
-                    if (stageController.currentStageVO == null) {
-                      stageController.addStage();
+                    if (newStageController.index == null) {
+                      stageController.addStage(newStageController.stageVO);
                     } else {
-                      stageController.updateCurrentStage();
+                      stageController.updateStage(
+                          newStageController.index, newStageController.stageVO);
                     }
-                    timerController.setStages(stageController.stageVOs);
+                    Get.back();
                   },
                   child: Text('저장'),
                 )
@@ -39,7 +39,7 @@ class NewStageWidget extends StatelessWidget {
               controller: TextEditingController()
                 ..text = newStageController.stageVO.title,
               decoration: InputDecoration(labelText: '제목'),
-              onChanged: (value) => stageController.setCurrentTitle(value),
+              onChanged: (value) => newStageController.setTitle(value),
             ),
             CupertinoTimerPicker(
               mode: CupertinoTimerPickerMode.ms,
@@ -47,7 +47,7 @@ class NewStageWidget extends StatelessWidget {
               secondInterval: 1,
               initialTimerDuration: newStageController.stageVO.duration,
               onTimerDurationChanged: (Duration changedDuration) {
-                stageController.setCurrentDuration(changedDuration);
+                newStageController.setDuration(changedDuration);
               },
             )
           ],

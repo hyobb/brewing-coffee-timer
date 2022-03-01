@@ -19,9 +19,14 @@ class StageDao extends DatabaseAccessor<AppDatabase> with _$StageDaoMixin {
   Stream<StageData> streamStage(int id) =>
       (select(stage)..where((table) => table.id.equals(id))).watchSingle();
 
-  Future insertStage(StageCompanion data) => into(stage).insert(data);
+  Future<StageData> insertStage(StageCompanion data) async =>
+      await into(stage).insertReturning(data);
 
-  Future<List<StageData>> getAll() {
-    return select(stage).get();
-  }
+  Future updateStage(Insertable<StageData> data) async =>
+      await update(stage).replace(data);
+
+  Future<List<StageData>> getAll() => select(stage).get();
+
+  Future deleteStage(int id) async =>
+      (delete(stage)..where((data) => data.id.equals(id))).go();
 }

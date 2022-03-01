@@ -1,34 +1,30 @@
 import 'package:brewing_coffee_timer/controllers/timer_controller.dart';
 import 'package:brewing_coffee_timer/data/database.dart';
 import 'package:brewing_coffee_timer/main.dart';
-import 'package:brewing_coffee_timer/models/stage.dart';
+import 'package:brewing_coffee_timer/models/stageVO.dart';
+import 'package:drift/drift.dart' as drift;
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class StageController extends GetxController {
-  final timerController = Get.put(TimerController());
   String _currentTitle = '';
   Duration _currentDuration = new Duration(minutes: 1, seconds: 0);
-  List<StageVO> _stageVOs = [
-    // Stage(1, '뜸', Duration(seconds: 3)),
-    // Stage(2, '1차 추출', Duration(seconds: 3)),
-    // Stage(3, '2차 추출', Duration(seconds: 3))
-  ];
+  RxList<StageVO> _stageVOs = RxList<StageVO>();
   StageVO? _currentStageVO;
-  get stageVOs => _stageVOs;
+  RxList<StageVO> get stageVOs => _stageVOs;
+
   get currentStageVO => _currentStageVO;
   AppDatabase db = appDatabase;
 
   @override
   onReady() {
     super.onReady();
-
-    _getAllStages();
   }
 
   @override
   onInit() {
     super.onInit();
-    print(_stageVOs);
+    _getAllStages();
   }
 
   @override
@@ -36,64 +32,68 @@ class StageController extends GetxController {
     super.onClose();
   }
 
-  addStage() {
+  addStage(StageVO stageVO) {
     var order = (_stageVOs.length + 1);
-    _stageVOs.add(new StageVO(order, _currentTitle, _currentDuration));
-    // resetCurrentData();
-    update();
+    var stageCompanion = StageCompanion(
+        order: drift.Value(order),
+        title: drift.Value(stageVO.title),
+        second: drift.Value(stageVO.duration.inSeconds));
+
+    db.stageDao.insertStage(stageCompanion).then((stageData) {
+      _stageVOs.add(
+          new StageVO(stageData.id, order, stageVO.title, stageVO.duration));
+      update();
+    });
   }
 
-  setCurrentTitle(String title) {
-    _currentTitle = title;
-  }
-
-  setCurrentDuration(Duration duration) {
-    _currentDuration = duration;
-  }
-
-  resetCurrentData() {
-    _currentDuration = new Duration(minutes: 1, seconds: 0);
-    _currentTitle = '';
-  }
-
-  setCurrentStage(int order) {
-    print('setcurrent!!');
-    _currentStageVO = _stageVOs[order - 1];
-    setCurrentTitle(_currentStageVO!.title);
-    _currentDuration = _currentStageVO!.duration;
-    print(_currentStageVO!.title);
-    timerController.setStages(_stageVOs);
-    update();
-  }
-
-  getCurrentTitle() {
-    if (_currentStageVO == null) {
-      return '';
-    } else {
-      return _currentStageVO!.title;
-    }
-  }
-
-  updateCurrentStage() {
-    if (_currentStageVO == null) {
+  updateStage(int? index, StageVO updateStageVO) {
+    if (index == null) {
       return;
     }
-    int order = _currentStageVO!.order;
-    StageVO _stage = StageVO(order, _currentTitle, _currentDuration);
-    _stageVOs.replaceRange(order - 1, order, [_stage]);
-    _currentStageVO = null;
-    timerController.setStages(_stageVOs);
+
+    var stageVO = _stageVOs[index];
+
+    StageVO newStageVO = StageVO(stageVO.id, updateStageVO.order,
+        updateStageVO.title, updateStageVO.duration);
+    _stageVOs.replaceRange(index, index + 1, [newStageVO]);
+
+    print('update!!');
+    print(index);
+    print(newStageVO.title);
+    print(newStageVO.duration);
+
+    db.stageDao.updateStage(StageCompanion(
+        id: drift.Value(newStageVO.id),
+        title: drift.Value(newStageVO.title),
+        second: drift.Value(newStageVO.duration.inSeconds),
+        order: drift.Value(newStageVO.order)));
+
+    update();
+  }
+
+  deleteStage(int index) {
+    var stageVO = _stageVOs[index];
+
+    if (stageVO == null) {
+      return;
+    }
+
+    _stageVOs.removeAt(index);
+    db.stageDao.deleteStage(stageVO.id);
     update();
   }
 
   _getAllStages() {
     db.stageDao.getAll().then((stageDataList) {
-      _stageVOs = stageDataList
-          .map((data) =>
-              StageVO(data.order, data.title, Duration(seconds: data.second)))
+      _stageVOs.value = stageDataList
+          .map((data) => StageVO(
+                data.id,
+                data.order,
+                data.title,
+                Duration(seconds: data.second),
+              ))
           .toList();
+      update();
     });
-
-    update();
   }
 }

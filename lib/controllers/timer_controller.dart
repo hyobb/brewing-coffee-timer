@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:developer';
 import 'dart:ffi';
+import 'dart:math';
 import 'package:brewing_coffee_timer/controllers/stage_controller.dart';
 import 'package:brewing_coffee_timer/data/database.dart';
-import 'package:brewing_coffee_timer/models/stage.dart';
+import 'package:brewing_coffee_timer/models/stageVO.dart';
 import 'package:circular_countdown_timer/circular_countdown_timer.dart';
 import 'package:drift/backends.dart';
 import 'package:flutter/material.dart';
@@ -24,6 +26,8 @@ class TimerController extends GetxController {
   CountDownController _countDownController = CountDownController();
   CountDownController _stageCountDownController = CountDownController();
 
+  final _stageCont = Get.find<StageController>();
+
   get stageVOs => _stageVOs;
   get totalElapsedTime => _totalElapsedDuration.toCustomString();
   get totalDurationSeconds => _totalDuration.inSeconds;
@@ -43,9 +47,15 @@ class TimerController extends GetxController {
   void onReady() {
     // TODO: implement onReady
     super.onReady();
-    setStages(Get.put(StageController()).stageVOs);
-
-    update();
+    _stageCont.stageVOs.listen((value) {
+      print('111');
+      print(value.toString());
+      setStages(value);
+      value.forEach((element) {
+        print(element.id);
+      });
+      update();
+    });
   }
 
   @override
@@ -59,6 +69,7 @@ class TimerController extends GetxController {
   }
 
   setStages(List<StageVO> stageVOs) {
+    print(stageVOs);
     if (stageVOs.isEmpty) {
       return;
     }

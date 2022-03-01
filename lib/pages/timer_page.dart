@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:brewing_coffee_timer/controllers/new_stage_controller.dart';
 import 'package:brewing_coffee_timer/controllers/stage_controller.dart';
 import 'package:brewing_coffee_timer/controllers/timer_controller.dart';
-import 'package:brewing_coffee_timer/models/stage.dart';
+import 'package:brewing_coffee_timer/models/stageVO.dart';
 import 'package:brewing_coffee_timer/widgets/new_stage_widget.dart';
 import 'package:circular_countdown_timer/circular_countdown_timer.dart';
 import 'package:flutter/material.dart';
@@ -11,9 +11,9 @@ import 'package:get/get.dart';
 import 'package:brewing_coffee_timer/extensions/duration.dart';
 
 class TimerPage extends StatelessWidget {
-  final stageController = Get.put(StageController());
-  final newStageController = Get.put(NewStageController());
-  final timerController = Get.put(TimerController());
+  final stageController = Get.find<StageController>();
+  final newStageController = Get.find<NewStageController>();
+  final timerController = Get.find<TimerController>();
   // timerController.setStages(stageController.stageVOs);
 
   @override
@@ -284,9 +284,9 @@ class StageListWidget extends GetView<StageController> {
         return ListView.separated(
           scrollDirection: Axis.vertical,
           shrinkWrap: true,
-          itemCount: controller.stageVOs.length,
+          itemCount: controller.stageVOs.value.length,
           itemBuilder: (context, index) {
-            return StageTile(controller.stageVOs[index]);
+            return StageTile(controller.stageVOs.value[index], index);
           },
           separatorBuilder: (context, index) {
             return Divider(
@@ -302,17 +302,18 @@ class StageListWidget extends GetView<StageController> {
 }
 
 class StageTile extends StatelessWidget {
-  final stageController = Get.put(StageController());
-  final newStageController = Get.put(NewStageController());
+  final stageController = Get.find<StageController>();
+  final newStageController = Get.find<NewStageController>();
   final StageVO stageVO;
+  final int index;
 
-  StageTile(this.stageVO);
+  StageTile(this.stageVO, this.index);
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
       leading: Text(
-        stageVO.order.toString(),
+        (index + 1).toString(),
         style: TextStyle(color: Colors.white),
       ),
       title: Text(
@@ -329,20 +330,21 @@ class StageTile extends StatelessWidget {
             ),
             IconButton(
               icon: Icon(Icons.delete, color: Colors.white),
-              onPressed: () => {},
+              onPressed: () {
+                stageController.deleteStage(index);
+              },
             ),
           ],
         ),
       ),
       onTap: () {
-        newStageController.setStage(stageVO);
-        stageController.setCurrentStage(stageVO.order);
+        newStageController.setStage(stageVO, index);
+
         Get.bottomSheet(Container(
           color: Colors.white,
           height: 400,
           child: NewStageWidget(),
         )).whenComplete(() {
-          stageController.setCurrentStage(stageVO.order);
           newStageController.resetStage();
         });
       },

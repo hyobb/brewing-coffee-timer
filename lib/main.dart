@@ -1,11 +1,19 @@
+import 'package:brewing_coffee_timer/controllers/stage_controller.dart';
+import 'package:brewing_coffee_timer/controllers/timer_controller.dart';
 import 'package:brewing_coffee_timer/data/database.dart';
 import 'package:brewing_coffee_timer/pages/timer_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
+import 'package:get/get.dart';
+
+import 'controllers/new_stage_controller.dart';
 
 AppDatabase appDatabase = AppDatabase();
 void main() {
   runApp(MyApp());
+  Get.put(StageController());
+  Get.put(TimerController());
+  Get.put(NewStageController());
 }
 
 class MyApp extends StatelessWidget {
