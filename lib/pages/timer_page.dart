@@ -281,7 +281,8 @@ class StageListWidget extends GetView<StageController> {
   Widget build(BuildContext context) {
     return GetBuilder<StageController>(
       builder: (controller) {
-        return ListView.separated(
+        return Expanded(
+            child: ListView.separated(
           scrollDirection: Axis.vertical,
           shrinkWrap: true,
           itemCount: controller.stageVOs.value.length,
@@ -295,7 +296,7 @@ class StageListWidget extends GetView<StageController> {
               endIndent: 20,
             );
           },
-        );
+        ));
       },
     );
   }
