@@ -1,14 +1,17 @@
+import 'dart:io' show Platform;
 import 'dart:ui';
 
 import 'package:brewing_coffee_timer/controllers/new_stage_controller.dart';
 import 'package:brewing_coffee_timer/controllers/stage_controller.dart';
 import 'package:brewing_coffee_timer/controllers/timer_controller.dart';
+import 'package:brewing_coffee_timer/main.dart';
 import 'package:brewing_coffee_timer/models/stageVO.dart';
 import 'package:brewing_coffee_timer/widgets/new_stage_widget.dart';
 import 'package:circular_countdown_timer/circular_countdown_timer.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:brewing_coffee_timer/extensions/duration.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class TimerPage extends StatelessWidget {
   final stageController = Get.find<StageController>();
@@ -16,6 +19,15 @@ class TimerPage extends StatelessWidget {
   final timerController = Get.find<TimerController>();
   // timerController.setStages(stageController.stageVOs);
 
+  BannerAd banner = BannerAd(
+      size: AdSize.banner,
+      adUnitId: UNIT_ID[Platform.isAndroid ? 'android' : 'ios']!,
+      listener: BannerAdListener(
+        onAdFailedToLoad: (Ad ad, LoadAdError error) {},
+        onAdLoaded: (_) {},
+      ),
+      request: AdRequest())
+    ..load();
   @override
   Widget build(BuildContext context) {
     final double statusBarHeight = MediaQuery.of(context).padding.top;
@@ -43,6 +55,12 @@ class TimerPage extends StatelessWidget {
       child: Column(children: [
         TimerWidget(),
         StageListWidget(),
+        Center(
+          child: Container(
+            height: 50,
+            child: (AdWidget(ad: banner)),
+          ),
+        )
       ]),
     );
   }
